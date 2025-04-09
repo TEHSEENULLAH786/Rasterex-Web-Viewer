@@ -9,6 +9,14 @@
         list-style-type: none;
         background-color: $background-light;
         width: 160px;
+        @media (max-width: 768px) {
+            height: 100vh;
+            // width: 300px;
+            overflow: scroll;
+          }
+          @media (max-width: 480px) {
+            width: 100%;
+          }
 
         li:nth-child(2) {
             margin-top: 10px;
@@ -23,6 +31,9 @@
             position: relative;
             display: flex;
             flex-direction: row;
+            @media (max-width: 768px) {
+                padding: 4px 12px;
+              }
 
             &.active,
             &:not(.active):hover {
@@ -226,7 +237,7 @@
 
     .progress {
         text-align: center;
-        margin-left: 65px;
+        // margin-left: 65px;
 
         div {
             color: $main;

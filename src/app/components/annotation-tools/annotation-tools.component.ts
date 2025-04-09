@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ElementRef, ViewChild, AfterViewInit, NgZone, Renderer2 } from '@angular/core';
 import { AnnotationToolsService } from './annotation-tools.service';
 import { RXCore } from 'src/rxcore';
 import { RxCoreService } from 'src/app/services/rxcore.service';
@@ -7,17 +7,28 @@ import { IGuiConfig } from 'src/rxcore/models/IGuiConfig';
 import { UserService } from '../user/user.service';
 import { firstValueFrom, lastValueFrom } from 'rxjs';
 
-
 @Component({
   selector: 'rx-annotation-tools',
   templateUrl: './annotation-tools.component.html',
   styleUrls: ['./annotation-tools.component.scss']
 })
-export class AnnotationToolsComponent implements OnInit {
+export class AnnotationToolsComponent implements OnInit, AfterViewInit {
+  @ViewChild('toolbarContainer') toolbarContainer: ElementRef;
+  
   guiConfig$ = this.rxCoreService.guiConfig$;
   opened$ = this.service.opened$;
   guiConfig: IGuiConfig | undefined;
   shapesAvailable: number = 5;
+  
+  // Variables for drag functionality
+  private initialPosition = { right: 36, top: 50 }; // Store initial position
+  private isDragging = false;
+  private startX: number;
+  private startY: number;
+  private currentX: number = 0;
+  private currentY: number = 0;
+  private offsetX: number = 0;
+  private offsetY: number = 0;
 
   isActionSelected = {
     "TEXT": false,
@@ -85,10 +96,18 @@ export class AnnotationToolsComponent implements OnInit {
   canUpdateAnnotation = this.userService.canUpdateAnnotation$;
   canDeleteAnnotation = this.userService.canDeleteAnnotation$;
 
+  // Position variables for the toolbar
+  toolbarPosition = { x: 0, y: 0 };
+
+  // Add this property
+  isMobileView = false;
+
   constructor(
     private readonly service: AnnotationToolsService,
     private readonly rxCoreService: RxCoreService,
-    private readonly userService: UserService) { }
+    private readonly userService: UserService,
+    private zone: NgZone,
+    private renderer: Renderer2) { }
 
   ngOnInit(): void {
     this.guiConfig$.subscribe(config => {
@@ -175,6 +194,96 @@ export class AnnotationToolsComponent implements OnInit {
       }
     });
 
+    // Add this to your existing ngOnInit
+    this.checkViewportSize();
+    window.addEventListener('resize', () => this.checkViewportSize());
+  }
+
+  ngAfterViewInit(): void {
+    // Nothing needed here - we'll use direct event bindings in the template
+  }
+
+  // Methods to handle drag events
+  startDrag(event: any): void {
+    // Prevent default only for mouse events, not touch events
+    if (event.type === 'mousedown') {
+      event.preventDefault();
+    }
+    
+    // Already dragging? Prevent multiple handlers
+    if (this.isDragging) return;
+    this.isDragging = true;
+    
+    // Get the container element
+    const container = (event.target as HTMLElement).closest('.annotation-tools-container') as HTMLElement;
+    if (!container) {
+      this.isDragging = false;
+      return;
+    }
+    
+    // Get initial pointer position
+    const initialPointerX = event.type.includes('touch') ? event.touches[0].clientX : event.clientX;
+    const initialPointerY = event.type.includes('touch') ? event.touches[0].clientY : event.clientY;
+    
+    // Get current position from inline styles or computed styles
+    let currentX = 0;
+    let currentY = 0;
+    
+    // Try to get current transform values
+    const style = window.getComputedStyle(container);
+    const transform = style.transform || style.webkitTransform;
+    
+    if (transform && transform !== 'none') {
+      // Parse transform matrix if it exists
+      const matrix = transform.match(/matrix.*\((.+)\)/);
+      if (matrix) {
+        const values = matrix[1].split(', ');
+        currentX = parseFloat(values[4]) || 0;
+        currentY = parseFloat(values[5]) || 0;
+      }
+    }
+    
+    // Visual feedback
+    container.classList.add('dragging');
+    console.log('Drag start', { x: currentX, y: currentY });
+    
+    // Move handler works for both mouse and touch
+    const moveHandler = (moveEvent: any) => {
+      // Get current pointer position
+      const pointerX = moveEvent.type.includes('touch') ? moveEvent.touches[0].clientX : moveEvent.clientX;
+      const pointerY = moveEvent.type.includes('touch') ? moveEvent.touches[0].clientY : moveEvent.clientY;
+      
+      // Calculate the distance moved
+      const dx = pointerX - initialPointerX;
+      const dy = pointerY - initialPointerY;
+      
+      // Apply the new transform
+      const newX = currentX + dx;
+      const newY = currentY + dy;
+      container.style.transform = `translate3d(${newX}px, ${newY}px, 0)`;
+    };
+    
+    // End handler works for both mouseup and touchend
+    const endHandler = () => {
+      this.isDragging = false;
+      container.classList.remove('dragging');
+      
+      // Remove all event listeners
+      document.removeEventListener('mousemove', moveHandler);
+      document.removeEventListener('touchmove', moveHandler);
+      document.removeEventListener('mouseup', endHandler);
+      document.removeEventListener('touchend', endHandler);
+      document.removeEventListener('touchcancel', endHandler);
+      
+      console.log('Drag end');
+    };
+    
+    // Add all relevant event listeners
+    document.addEventListener('mousemove', moveHandler, { passive: false });
+    document.addEventListener('touchmove', moveHandler, { passive: false });
+    document.addEventListener('mouseup', endHandler);
+    document.addEventListener('touchend', endHandler);
+    document.addEventListener('touchcancel', endHandler);
   }
 
   private _deselectAllActions(): void {
@@ -399,5 +508,14 @@ export class AnnotationToolsComponent implements OnInit {
 
     RXCore.calibrate(selected);
   }*/
+
+  ngOnDestroy() {
+    // Clean up the event listener
+    window.removeEventListener('resize', () => this.checkViewportSize());
+  }
+
+  checkViewportSize() {
+    this.isMobileView = window.innerWidth <= 768;
+  }
 
 }

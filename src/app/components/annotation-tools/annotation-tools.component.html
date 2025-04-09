@@ -1,6 +1,41 @@
+<div class="undo-redo-toolbar" *ngIf="opened$ | async">
+    <ul *ngIf="isMobileView && !(guiConfig$ | async).disableMarkupUndoRedoButtons && ((canAddAnnotation | async) || (canUpdateAnnotation | async) || (canDeleteAnnotation | async))" class="toolbar-menu">
+        <li
+            class=""
+            (click)="onAction(true)">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M7.50033 11.6667L4.16699 8.33333L7.50033 5" stroke="#333C4E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M4.16602 8.33203H13.3327C14.2167 8.33203 15.0646 8.68322 15.6897 9.30834C16.3148 9.93346 16.666 10.7813 16.666 11.6654C16.666 12.5494 16.3148 13.3973 15.6897 14.0224C15.0646 14.6475 14.2167 14.9987 13.3327 14.9987H12.4993" stroke="#333C4E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="tooltip-text tooltip-left">Undo</span>
+        </li>
+        <li
+            class="tooltip"
+            (click)="onAction()" >
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12.4997 11.6667L15.833 8.33333L12.4997 5" stroke="#333C4E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M15.834 8.33203H6.66732C5.78326 8.33203 4.93542 8.68322 4.3103 9.30834C3.68517 9.93346 3.33398 10.7813 3.33398 11.6654C3.33398 12.5494 3.68517 13.3973 4.3103 14.0224C4.93542 14.6475 5.78326 14.9987 6.66732 14.9987H7.50065" stroke="#333C4E" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="tooltip-text tooltip-left">Redo</span>
+        </li>
+    </ul>
+</div>
 <div class="annotation-tools-container">
+
     <div *ngIf="opened$ | async" class="annotation-toolbar-menu-container">
         <ul *ngIf="(canAddAnnotation | async) || (canUpdateAnnotation | async)" class="toolbar-menu">
+            <!-- Drag handle at the top of the toolbar -->
+            <li class="drag-handle"  (mousedown)="startDrag($event)" 
+            (touchstart)="startDrag($event)">
+                <div class="tooltip">
+                    <svg width="16" height="10" viewBox="0 0 16 10" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 1H1C0.447715 1 0 1.44772 0 2C0 2.55228 0.447715 3 1 3H15C15.5523 3 16 2.55228 16 2C16 1.44772 15.5523 1 15 1Z" fill="#333C4E"/>
+                        <path d="M15 7H1C0.447715 7 0 7.44772 0 8C0 8.55228 0.447715 9 1 9H15C15.5523 9 16 8.55228 16 8C16 7.44772 15.5523 7 15 7Z" fill="#333C4E"/>
+                    </svg>
+                    <span class="tooltip-text tooltip-top">Drag</span>
+                </div>
+            </li>
+            <li class="separator"></li>
             <li
                 *ngIf="!(guiConfig$ | async).disableMarkupTextButton && (canAddAnnotation | async)"
                 class="tooltip"
@@ -433,7 +468,7 @@
               -->
 
             <li
-                *ngIf="!(guiConfig$ | async).disableMarkupNoteButton && (canAddAnnotation | async)"
+                *ngIf="!(guiConfig$ | async).disableMarkupNoteButton && (canAddAnnotation | async) && !isMobileView"
                 class="tooltip"
                 [class.selected]="isActionSelected['NOTE']"
                 (click)="onActionSelect('NOTE')">
@@ -458,7 +493,7 @@
                    c20.9,0,37.8,17,37.8,37.8s-17,37.8-37.8,37.8s-37.8-17-37.8-37.8S130.8,96,151.7,96z"/></g></g></svg>
                 <span class="tooltip-text tooltip-left">Images</span>
             </li> -->
-            <li *ngIf="!(guiConfig$ | async).disableLinks && (canAddAnnotation | async)" 
+            <li *ngIf="!(guiConfig$ | async).disableLinks && (canAddAnnotation | async) && !isMobileView" 
             class="tooltip"
             [class.selected]="isActionSelected['LINKS_LIBRARY']"
             (click)="onActionSelect('LINKS_LIBRARY')">
@@ -482,7 +517,7 @@
             </li> -->
 
 
-            <li *ngIf="(!(guiConfig$ | async).disableMarkupLockButton) && (canUpdateAnnotation | async)" 
+            <li *ngIf="(!(guiConfig$ | async).disableMarkupLockButton) && (canUpdateAnnotation | async) && !isMobileView" 
             class="tooltip"
             [class.selected]="isActionSelected['MARKUP_LOCK']"
             (click)="onActionSelect('MARKUP_LOCK')">
@@ -496,7 +531,7 @@
             </li>
         </ul>
 
-        <ul *ngIf="!(guiConfig$ | async).disableMarkupUndoRedoButtons && ((canAddAnnotation | async) || (canUpdateAnnotation | async) || (canDeleteAnnotation | async))" class="toolbar-menu">
+        <ul *ngIf="!isMobileView && !(guiConfig$ | async).disableMarkupUndoRedoButtons && ((canAddAnnotation | async) || (canUpdateAnnotation | async) || (canDeleteAnnotation | async))" class="toolbar-menu">
             <li
                 class="tooltip"
                 (click)="onAction(true)">

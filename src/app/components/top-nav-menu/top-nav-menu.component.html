@@ -5,7 +5,6 @@
         <rx-login></rx-login>
     </div>
 
-
     <div class="top-nav-item button sidebar" #sidebar *ngIf="fileLength > 0">
         <div class="dropdown" [class.opened]="sidebarOpened" (click)="handleOpenSidebarMenu()">
             <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 16 16">
@@ -205,43 +204,17 @@
             <path d="M790.4 544c67.2-41.6 112-118.4 112-204.8 0-134.4-108.8-243.2-243.2-243.2-19.2 0-32 12.8-32 32s12.8 32 32 32c99.2 0 179.2 80 179.2 179.2s-80 179.2-179.2 179.2c-19.2 0-32 12.8-32 32s12.8 32 32 32c163.2 0 297.6 144 297.6 323.2 0 19.2 12.8 32 32 32s32-12.8 32-32c3.2-166.4-92.8-307.2-230.4-361.6z" fill="#444444" p-id="4014"></path>
         </svg>
     </div>
+    <!-- Mobile menu toggle button -->
+    <div class="mobile-menu-toggle" *ngIf="isMobile" (click)="toggleMobileMenu()">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <path d="M3 12H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M3 6H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
     <rx-room-panel [visible]="collabPanelOpened" (visibleChange)="collabPanelOpened = $event"></rx-room-panel>
 
-    <!-- <div class="top-nav-item more" #more>
-        <div class="dropdown" [class.opened]="moreOpened" (click)="moreOpened = !moreOpened">
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <path d="M14 12.5C13.6022 12.5 13.2206 12.658 12.9393 12.9393C12.658 13.2206 12.5 13.6022 12.5 14C12.5 14.3978 12.658 14.7794 12.9393 15.0607C13.2206 15.342 13.6022 15.5 14 15.5C14.3978 15.5 14.7794 15.342 15.0607 15.0607C15.342 14.7794 15.5 14.3978 15.5 14C15.5 13.6022 15.342 13.2206 15.0607 12.9393C14.7794 12.658 14.3978 12.5 14 12.5Z" fill="#A4ABAE"/>
-                <path d="M8.1665 12.5C7.76868 12.5 7.38715 12.658 7.10584 12.9393C6.82454 13.2206 6.6665 13.6022 6.6665 14C6.6665 14.3978 6.82454 14.7794 7.10584 15.0607C7.38715 15.342 7.76868 15.5 8.1665 15.5C8.56433 15.5 8.94586 15.342 9.22717 15.0607C9.50847 14.7794 9.6665 14.3978 9.6665 14C9.6665 13.6022 9.50847 13.2206 9.22717 12.9393C8.94586 12.658 8.56433 12.5 8.1665 12.5Z" fill="#A4ABAE"/>
-                <path d="M19.8335 12.5C19.4357 12.5 19.0541 12.658 18.7728 12.9393C18.4915 13.2206 18.3335 13.6022 18.3335 14C18.3335 14.3978 18.4915 14.7794 18.7728 15.0607C19.0541 15.342 19.4357 15.5 19.8335 15.5C20.2313 15.5 20.6129 15.342 20.8942 15.0607C21.1755 14.7794 21.3335 14.3978 21.3335 14C21.3335 13.6022 21.1755 13.2206 20.8942 12.9393C20.6129 12.658 20.2313 12.5 19.8335 12.5Z" fill="#A4ABAE"/>
-            </svg>
-        </div>
-        <div [class.opened]="moreOpened" class="options-container">
-            <div class="options-wrapper">
-                <ul class="options" role="listbox" aria-expanded="false">
-                    <li role="option" tabindex="0">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M9.78782 12.1574C9.78594 12.1574 9.78407 12.1574 9.78219 12.1574C9.43719 12.1543 9.15969 11.8721 9.16282 11.5268L9.16563 11.2143C9.16563 11.1965 9.16657 11.1784 9.16844 11.1606C9.255 10.2515 9.85844 9.69431 10.3438 9.2465C10.5081 9.09463 10.6638 8.95119 10.7963 8.8015C10.9578 8.61931 11.1922 8.24619 10.9456 7.79588C10.6616 7.27588 9.96782 7.12869 9.42875 7.25213C8.86563 7.38088 8.65813 7.86181 8.58438 8.13681C8.495 8.47025 8.15219 8.66806 7.81875 8.579C7.48532 8.48963 7.2875 8.14681 7.37657 7.81338C7.62563 6.88306 8.27188 6.23463 9.14938 6.03369C10.3303 5.764 11.5197 6.24119 12.0419 7.19588C12.4766 7.99088 12.3575 8.92369 11.7309 9.63056C11.5569 9.82681 11.3709 9.99869 11.1909 10.1646C10.7425 10.5787 10.4622 10.8556 10.4147 11.2552L10.4122 11.5374C10.4097 11.8815 10.1303 12.1574 9.78782 12.1574Z" fill="#333C4E"/>
-                            <path d="M9.78748 14.032C9.62498 14.032 9.46248 13.9664 9.34685 13.8508C9.2281 13.7352 9.16248 13.5727 9.16248 13.407C9.16248 13.2445 9.2281 13.082 9.34685 12.9664C9.5781 12.7352 9.99685 12.7352 10.2281 12.9664C10.3469 13.082 10.4125 13.2445 10.4125 13.407C10.4125 13.5727 10.3469 13.732 10.2312 13.8508C10.1125 13.9664 9.9531 14.032 9.78748 14.032Z" fill="#333C4E"/>
-                            <path d="M9.97594 18.1245C9.265 18.1245 8.56031 18.032 7.88125 17.8492C4.955 17.062 2.66375 14.638 2.04406 11.6733C1.4125 8.65297 2.57813 5.47797 5.01407 3.58453C6.42219 2.48984 8.19813 1.88672 10.015 1.88672C11.2728 1.88672 12.5219 2.17922 13.6275 2.73203C16.3578 4.09797 18.1219 6.95172 18.1219 10.0027C18.1219 12.492 16.9472 14.8914 14.9797 16.4208C13.5666 17.5195 11.7894 18.1245 9.97594 18.1245ZM10.0153 3.13672C8.475 3.13672 6.97125 3.64609 5.78156 4.57141C3.72 6.17391 2.73313 8.86109 3.26781 11.4173C3.79219 13.9252 5.73063 15.9761 8.20625 16.642C8.77938 16.7961 9.375 16.8745 9.97594 16.8745C11.5128 16.8745 13.0175 16.363 14.2128 15.4339C15.8781 14.1395 16.8722 12.1092 16.8722 10.0027C16.8722 7.42109 15.3794 5.00609 13.0688 3.85016C12.1356 3.38359 11.08 3.13672 10.0153 3.13672Z" fill="#333C4E"/>
-                        </svg>
-                        <span>Help</span>
-                    </li>
-                    <li role="option" tabindex="0">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M16.875 3.125H3.125C2.09125 3.125 1.25 3.96625 1.25 5V15C1.25 16.0337 2.09125 16.875 3.125 16.875H16.875C17.9088 16.875 18.75 16.0337 18.75 15V5C18.75 3.96625 17.9088 3.125 16.875 3.125ZM17.5 5.21125V14.4981L13.6125 8.66687L17.5 5.21125ZM8.875 10.875C9.20062 11.1194 9.59062 11.2431 9.98563 11.2431C10.3938 11.2431 10.8081 11.1106 11.1656 10.8419L12.6694 9.505L16.7488 15.6244H3.25125L7.33187 9.50313L8.875 10.875ZM16.5594 4.375L10.3756 9.875C10.1544 10.0406 9.84562 10.0412 9.66562 9.90812L3.44125 4.375H16.5594ZM6.38812 8.66562L2.5 14.4981V5.21125L6.38812 8.66562Z" fill="#333C4E"/>
-                        </svg>
-                        <span>Contact Support</span>
-                    </li>
-                    <li role="option" tabindex="0">
-                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M5.30496 18.5C5.1187 18.5 4.93375 18.4394 4.7759 18.3203C4.48186 18.0979 4.34451 17.7157 4.42453 17.3469L5.51819 12.3198L1.8092 8.92564C1.53657 8.67728 1.43242 8.28398 1.54435 7.9241C1.65629 7.56489 1.96083 7.31058 2.3214 7.2758L7.22884 6.81089L9.16907 2.07291C9.31213 1.72481 9.63794 1.5 9.99994 1.5C10.3619 1.5 10.6878 1.72481 10.8308 2.0721L12.771 6.81089L17.6777 7.2758C18.0391 7.30977 18.3436 7.56489 18.4555 7.9241C18.5675 8.2833 18.464 8.67728 18.1913 8.92564L14.4823 12.3191L15.576 17.3461C15.6562 17.7157 15.5187 18.0979 15.2248 18.3196C14.9315 18.5413 14.5405 18.5583 14.2316 18.3647L9.99994 15.7259L5.76826 18.3661C5.62519 18.4548 5.46579 18.5 5.30496 18.5ZM9.99994 14.5891C10.1608 14.5891 10.32 14.6342 10.4632 14.7228L14.4569 17.2153L13.4247 12.4706C13.3511 12.1329 13.4609 11.7803 13.711 11.5519L17.2131 8.34691L12.5797 7.90786C12.2461 7.87605 11.9592 7.6572 11.8289 7.33643L9.99994 2.86521L8.1688 7.33711C8.03987 7.65571 7.75297 7.87456 7.42015 7.90637L2.78613 8.34542L6.28811 11.5504C6.53895 11.7795 6.64868 12.1314 6.57436 12.4699L5.54296 17.2145L9.53664 14.7228C9.67971 14.6342 9.83911 14.5891 9.99994 14.5891ZM7.19136 6.90252L7.19058 6.90401L7.19136 6.90252ZM12.8071 6.90036L12.8079 6.90184L12.8071 6.90036Z" fill="#333C4E" stroke="#333C4E" stroke-width="0.2"/>
-                        </svg>
-                        <span>New</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-    </div> -->
+
 </nav>
 
 <rx-modal-dialog *ngIf="modalFileGaleryOpened$ | async">
@@ -252,3 +225,50 @@
     *ngIf="isPrint"
     (closed)="isPrint = false">
 </print>
+
+
+
+<!-- Mobile menu container -->
+<div class="mobile-menu-container" *ngIf="isMobile" [class.open]="mobileMenuOpen">
+  <div class="mobile-menu-header">
+    <div class="mobile-menu-title">Menu</div>
+    <div class="mobile-menu-close" (click)="toggleMobileMenu()">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M6 6L18 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </div>
+  </div>
+  <div class="mobile-menu-content">
+    <!-- Mobile menu items -->
+    <div class="mobile-menu-item" *ngIf="(guiConfig$ | async).canFileOpen" (click)="handleOpenFile(); toggleMobileMenu()">
+      <span>Open</span>
+    </div>
+    <div class="mobile-menu-item" *ngIf="(guiConfig$ | async).canSaveFile" (click)="handleSaveFile(); toggleMobileMenu()">
+      <span>Save File</span>
+    </div>
+    <div class="mobile-menu-item" *ngIf="(guiConfig$ | async).canExport" (click)="onExportClick(); toggleMobileMenu()">
+      <span>Export</span>
+    </div>
+    <div class="mobile-menu-item" *ngIf="(guiConfig$ | async).canPrint" (click)="openModalPrint(); toggleMobileMenu()">
+      <span>Print</span>
+    </div>
+    <div class="mobile-menu-item" *ngIf="(guiConfig$ | async).canCompare && !state?.is3D && !(guiConfig$ | async).disableBurgerMenuCompare" (click)="openModalCompare(); toggleMobileMenu()">
+      <span>Compare</span>
+    </div>
+    <div class="mobile-menu-item" *ngIf="(guiConfig$ | async).canGetFileInfo" (click)="fileInfoDialog(); toggleMobileMenu()">
+      <span>File Info</span>
+    </div>
+    
+    <!-- Mode selection in mobile menu -->
+    <div class="mobile-menu-section" *ngIf="fileLength > 0">
+      <div class="mobile-menu-section-title">View Mode</div>
+      <div class="mobile-menu-item" *ngFor="let option of options" 
+           [class.selected]="selectedValue?.value === option.value"
+           [class.hidden]="option.hidden"
+           (click)="onModeChange(option); toggleMobileMenu()">
+        <span>{{option.label}}</span>
+      </div>
+    </div>
+  </div>
+</div>

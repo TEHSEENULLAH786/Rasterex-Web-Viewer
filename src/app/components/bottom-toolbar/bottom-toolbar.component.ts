@@ -1,4 +1,4 @@
-import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, AfterViewInit, ViewChild, ElementRef, Input, Output, EventEmitter, OnDestroy, Renderer2 } from '@angular/core';
 import { RxCoreService } from 'src/app/services/rxcore.service';
 import { RXCore } from 'src/rxcore';
 import { BottomToolbarService, IBottomToolbarState } from './bottom-toolbar.service';
@@ -9,17 +9,21 @@ import { CompareService } from '../compare/compare.service';
   templateUrl: './bottom-toolbar.component.html',
   styleUrls: ['./bottom-toolbar.component.scss']
 })
-export class BottomToolbarComponent implements OnInit, AfterViewInit {
+export class BottomToolbarComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('birdseyeImage', { static: false }) birdseyeImage : ElementRef;
   @ViewChild('birdseyeIndicator', { static: false }) birdseyeIndicator : ElementRef;
   @ViewChild('birdseyeMarkup', { static: false }) birdseyeMarkup : ElementRef;
+  @ViewChild('drawerHandle', { static: false }) drawerHandle: ElementRef;
   @Output() isVisibleChange = new EventEmitter<boolean>();
   @Input() lists: Array<any> = [];
 
   constructor(
     private readonly rxCoreService: RxCoreService,
     private readonly service: BottomToolbarService,
-    private readonly compareService: CompareService) { }
+    private readonly compareService: CompareService,
+    private renderer: Renderer2) {
+    this.checkMobileView();
+  }
 
   guiConfig$ = this.rxCoreService.guiConfig$;
   guiState$ = this.rxCoreService.guiState$;
@@ -42,6 +46,15 @@ export class BottomToolbarComponent implements OnInit, AfterViewInit {
   grayscaleValue: number = 3;
 
   state: IBottomToolbarState = { isActionSelected: {}};
+  isMobileView = false;
+  isMobileToolbarOpen = false;
+
+  private startY: number = 0;
+  private currentY: number = 0;
+  private initialTouchY: number = 0;
+  private dragging: boolean = false;
+  private dragListeners: Function[] = [];
+
   private _deselectAllActions(): void {
     Object.entries(this.state.isActionSelected).forEach(([key, value]) => {
 
@@ -83,6 +96,8 @@ export class BottomToolbarComponent implements OnInit, AfterViewInit {
         }
       });
     });
+    this.checkMobileView();
+    window.addEventListener('resize', this.onResize);
   }
 
   ngAfterViewInit(): void {
@@ -112,7 +127,10 @@ export class BottomToolbarComponent implements OnInit, AfterViewInit {
 
     });
 
-
+    // Add drawer handle event listeners after view is initialized
+    setTimeout(() => {
+      this.setupDrawerHandleEvents();
+    }, 500);
   }
 
   onPreviousPage() {
@@ -362,6 +380,111 @@ export class BottomToolbarComponent implements OnInit, AfterViewInit {
     setTimeout(() => {
       this.compareService.changeGrayScale(this.grayscaleValue);
     }, 500);
+  }
+
+  private onResize = (): void => {
+    this.checkMobileView();
+  }
+
+  private checkMobileView(): void {
+    this.isMobileView = window.innerWidth <= 768;
+    
+    if (!this.isMobileView) {
+      this.isMobileToolbarOpen = false;
+    }
+  }
+
+  toggleMobileToolbar(): void {
+    this.isMobileToolbarOpen = !this.isMobileToolbarOpen;
+    
+    // Set up drag events when toolbar is opened
+    if (this.isMobileToolbarOpen) {
+      setTimeout(() => {
+        this.setupDrawerHandleEvents();
+      }, 100);
+    }
+  }
+
+  setupDrawerHandleEvents(): void {
+    if (this.isMobileView && this.drawerHandle) {
+      const handleEl = this.drawerHandle.nativeElement;
+      const toolbarContainer = handleEl.closest('.bottom-toolbar-container');
+      
+      // Touch events for mobile
+      this.dragListeners.push(
+        this.renderer.listen(handleEl, 'touchstart', (event: TouchEvent) => {
+          this.startDrag(event.touches[0].clientY);
+          event.preventDefault();
+        })
+      );
+      
+      this.dragListeners.push(
+        this.renderer.listen(document, 'touchmove', (event: TouchEvent) => {
+          if (this.dragging) {
+            this.onDrag(event.touches[0].clientY);
+            event.preventDefault();
+          }
+        })
+      );
+      
+      this.dragListeners.push(
+        this.renderer.listen(document, 'touchend', () => {
+          this.endDrag();
+        })
+      );
+      
+      // Mouse events for desktop testing
+      this.dragListeners.push(
+        this.renderer.listen(handleEl, 'mousedown', (event: MouseEvent) => {
+          this.startDrag(event.clientY);
+          event.preventDefault();
+        })
+      );
+      
+      this.dragListeners.push(
+        this.renderer.listen(document, 'mousemove', (event: MouseEvent) => {
+          if (this.dragging) {
+            this.onDrag(event.clientY);
+            event.preventDefault();
+          }
+        })
+      );
+      
+      this.dragListeners.push(
+        this.renderer.listen(document, 'mouseup', () => {
+          this.endDrag();
+        })
+      );
+    }
+  }
+  
+  startDrag(y: number): void {
+    this.dragging = true;
+    this.startY = y;
+    this.initialTouchY = y;
+  }
+  
+  onDrag(y: number): void {
+    if (!this.dragging) return;
+    
+    this.currentY = y;
+    const deltaY = this.currentY - this.startY;
+    
+    // If dragged down more than 50px, close the toolbar
+    if (deltaY > 50) {
+      this.toggleMobileToolbar(); // Close the toolbar
+      this.dragging = false;
+    }
+  }
+  
+  endDrag(): void {
+    this.dragging = false;
+  }
+
+  ngOnDestroy() {
+    // Remove all event listeners
+    this.dragListeners.forEach(unlisten => unlisten());
+    window.removeEventListener('resize', this.onResize);
   }
 
 }

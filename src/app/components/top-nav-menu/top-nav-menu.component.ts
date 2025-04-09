@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, Input } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Input, HostListener, OnDestroy } from '@angular/core';
 import { FileGaleryService } from '../file-galery/file-galery.service';
 import { RxCoreService } from 'src/app/services/rxcore.service';
 import { RXCore } from 'src/rxcore';
@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs';
 import { SideNavMenuService } from '../side-nav-menu/side-nav-menu.service';
 import { MeasurePanelService } from '../annotation-tools/measure-panel/measure-panel.service';
 import { ActionType } from './type';
+import { Subject } from 'rxjs';
 
 
 @Component({
@@ -24,11 +25,15 @@ import { ActionType } from './type';
     '(window:keydown.control.p)': 'handlePrint($event)'
   }
 })
-export class TopNavMenuComponent implements OnInit {
+export class TopNavMenuComponent implements OnInit, OnDestroy {
   @ViewChild('sidebar') sidebar: ElementRef;
   @ViewChild('burger') burger: ElementRef;
   @ViewChild('more') more: ElementRef;
   @Input() state: any;;
+
+  // Add mobile menu properties
+  mobileMenuOpen = false;
+  isMobile = false;
 
   guiConfig$ = this.rxCoreService.guiConfig$;
   guiState$ = this.rxCoreService.guiState$;
@@ -56,7 +61,14 @@ export class TopNavMenuComponent implements OnInit {
   currentScaleValue: string;
   fileLength: number = 0;
   collabPanelOpened: boolean = false;
+  private destroyer = new Subject<boolean>();
   
+  // Add HostListener for window resize
+  @HostListener('window:resize', ['$event'])
+  onResize() {
+    this.checkIfMobile();
+  }
+
   constructor(
     private readonly fileGaleryService: FileGaleryService,
     private readonly rxCoreService: RxCoreService,
@@ -67,6 +79,8 @@ export class TopNavMenuComponent implements OnInit {
     private readonly sideNavMenuService: SideNavMenuService,
     private readonly measurePanelService: MeasurePanelService
     ) {
+    this.checkIfMobile();
+    window.addEventListener('resize', this.checkIfMobile.bind(this));
   }
 
   
@@ -86,6 +100,9 @@ export class TopNavMenuComponent implements OnInit {
 
   ngOnInit(): void {
     this._setOptions();
+    
+    // Check if device is mobile
+    this.checkIfMobile();
 
     this.rxCoreService.guiState$.subscribe((state) => {
       this.guiState = state;
@@ -160,6 +177,33 @@ export class TopNavMenuComponent implements OnInit {
 
   }
 
+  // Add method to check if device is mobile
+  checkIfMobile() {
+    const wasMobile = this.isMobile;
+    this.isMobile = window.innerWidth <= 767;
+    
+    // Close mobile menu if switching from mobile to desktop
+    if (wasMobile && !this.isMobile && this.mobileMenuOpen) {
+      this.toggleMobileMenu();
+    }
+  }
+
+  // Add method to toggle mobile menu
+  toggleMobileMenu() {
+    this.mobileMenuOpen = !this.mobileMenuOpen;
+    
+    // Prevent body scrolling when mobile menu is open
+    if (this.mobileMenuOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+  }
+
+  closeMobileMenu() {
+    this.mobileMenuOpen = false;
+  }
+
   /* Listeners */
   handleClickOutside(event: any) {
     if (this.moreOpened && !this.more.nativeElement.contains(event.target)) {
@@ -172,6 +216,12 @@ export class TopNavMenuComponent implements OnInit {
 
     if (this.sidebarOpened && !this.sidebar.nativeElement.contains(event.target)) {
       this.sidebarOpened = false;
+    }
+
+    // Add this for mobile menu
+    if (this.mobileMenuOpen && !event.target.closest('.mobile-menu-container') && 
+        !event.target.closest('.mobile-menu-toggle')) {
+      this.mobileMenuOpen = false;
     }
   }
 
@@ -568,6 +618,7 @@ export class TopNavMenuComponent implements OnInit {
   
   ngOnDestroy(): void {
     this.guiOnNoteSelected.unsubscribe();
+    window.removeEventListener('resize', this.checkIfMobile.bind(this));
   }
 
 
