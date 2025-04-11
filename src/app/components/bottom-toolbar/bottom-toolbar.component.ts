@@ -156,6 +156,14 @@ export class BottomToolbarComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   onActionSelect(action) {
+    // Skip actions that aren't supported on mobile
+    if (this.isMobileView) {
+      const allowedMobileActions = ['FIT_TO_WINDOW', 'ROTATE', 'BACKGROUND', 'MONOCHROME'];
+      if (!allowedMobileActions.includes(action)) {
+        return;
+      }
+    }
+    
     RXCore.hideTextInput();
     RXCore.unSelectAllMarkup();
     this.rxCoreService.setGuiMarkup(-1, -1);
@@ -387,15 +395,36 @@ export class BottomToolbarComponent implements OnInit, AfterViewInit, OnDestroy 
   }
 
   private checkMobileView(): void {
+    const wasMobile = this.isMobileView;
     this.isMobileView = window.innerWidth <= 768;
     
     if (!this.isMobileView) {
       this.isMobileToolbarOpen = false;
+    } else {
+      // Always keep toolbar open on mobile
+      this.isMobileToolbarOpen = true;
+    }
+    
+    // Deselect actions that are not available on mobile when switching to mobile
+    if (!wasMobile && this.isMobileView) {
+      const mobileIncompatibleActions = [
+        'BIRDSEYE', 'MAGNIFY', 'VECTORINFO', 'ZOOM_IN', 'ZOOM_OUT',
+        'FIT_WIDTH', 'FIT_HEIGHT', 'ZOOM_WINDOW', 'SELECT_TEXT', 'SEARCH_TEXT'
+      ];
+      
+      mobileIncompatibleActions.forEach(action => {
+        if (this.state?.isActionSelected[action]) {
+          this.state.isActionSelected[action] = false;
+        }
+      });
+      
+      this.service.setState(this.state);
     }
   }
 
   toggleMobileToolbar(): void {
-    this.isMobileToolbarOpen = !this.isMobileToolbarOpen;
+    // This method is now a no-op as toolbar is always open on mobile
+    // The method is kept for backward compatibility
     
     // Set up drag events when toolbar is opened
     if (this.isMobileToolbarOpen) {
@@ -465,16 +494,8 @@ export class BottomToolbarComponent implements OnInit, AfterViewInit, OnDestroy 
   }
   
   onDrag(y: number): void {
-    if (!this.dragging) return;
-    
-    this.currentY = y;
-    const deltaY = this.currentY - this.startY;
-    
-    // If dragged down more than 50px, close the toolbar
-    if (deltaY > 50) {
-      this.toggleMobileToolbar(); // Close the toolbar
-      this.dragging = false;
-    }
+    // No-op - we're keeping the toolbar always visible now
+    this.dragging = false;
   }
   
   endDrag(): void {

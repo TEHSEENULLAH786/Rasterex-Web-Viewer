@@ -222,7 +222,7 @@ export class SignatureComponent implements OnInit {
     RXCore.gotoPage(0);
 
     this.applyPanelOpened = false;
-    this.rxCoreService.setGuiMode(GuiMode.View);
+    this.rxCoreService.setGuiMode(GuiMode.Annotate);
   }
 
   onAdoptSignature(signatures: ISignatures): void {
@@ -247,7 +247,7 @@ export class SignatureComponent implements OnInit {
     this.confirmDismissOpened = false;
 
     if (resetGuiMode) {
-      this.rxCoreService.setGuiMode(GuiMode.View);
+      this.rxCoreService.setGuiMode(GuiMode.Annotate);
     }
   }
 

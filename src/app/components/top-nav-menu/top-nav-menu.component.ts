@@ -95,12 +95,15 @@ export class TopNavMenuComponent implements OnInit, OnDestroy {
     ];
 
     this.selectedValue = option ? option : this.options[0];
+    if (this.isMobile) {
+      this.selectedValue = this.options[1];
+    } 
     this.annotationToolsService.setSelectedOption(this.selectedValue);
   }
 
   ngOnInit(): void {
     this._setOptions();
-    
+  
     // Check if device is mobile
     this.checkIfMobile();
 

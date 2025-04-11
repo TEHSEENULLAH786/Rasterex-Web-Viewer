@@ -4,6 +4,8 @@ import { RXCore } from 'src/rxcore';
 import { FileGaleryService } from './file-galery.service';
 import { random } from 'lodash-es';
 import { IGuiConfig } from 'src/rxcore/models/IGuiConfig';
+import { GuiMode } from 'src/rxcore/enums/GuiMode';
+import { AnnotationToolsService } from '../annotation-tools/annotation-tools.service';
 
 @Component({
   selector: 'rx-file-galery',
@@ -82,10 +84,16 @@ export class FileGaleryComponent implements OnInit {
   file: any;
   isUploadFile: boolean = false;
   fileType: string;
+  private isMobile: boolean = false;
+
+  private checkIfMobile(): boolean {
+    return window.innerWidth <= 767;
+  }
 
   constructor(
     private readonly fileGaleryService: FileGaleryService,
-    private readonly rxCoreService: RxCoreService
+    private readonly rxCoreService: RxCoreService,
+    private readonly annotationToolsService: AnnotationToolsService
   ) { }
 
 
@@ -116,7 +124,13 @@ export class FileGaleryComponent implements OnInit {
       }, 1000);
     }
 
+    // Initial check for mobile
+    this.isMobile = this.checkIfMobile();
     
+    // Listen for window resize events
+    window.addEventListener('resize', () => {
+      this.isMobile = this.checkIfMobile();
+    });
 
   }
 
@@ -205,7 +219,38 @@ export class FileGaleryComponent implements OnInit {
       };
 
       loadNextChunk();
-    }
+      
+      // Switch to annotate mode only on mobile devices
+    setTimeout(() => {
+      // Update mobile check
+      this.isMobile = this.checkIfMobile();
+      
+      // Only apply annotate mode on mobile devices
+      if (this.isMobile) {
+        this.rxCoreService.setGuiMode(GuiMode.Annotate);
+        
+        // Set the proper config for annotate mode
+        this.rxCoreService.setGuiConfig({
+          disableMarkupTextButton: false,
+          disableMarkupCalloutButton: false,
+          disableMarkupEraseButton: false,
+          disableMarkupNoteButton: false,
+          disableMarkupShapeButton: false,
+          disableMarkupStampButton: false,
+          disableMarkupPaintButton: false,
+          disableMarkupArrowButton: false,
+          disableMarkupCountButton: true,
+          disableMarkupMeasureButton: true,
+          disableImages: false,
+          disableLinks: false,
+          disableSymbol: false,
+        });
+
+        // Show the annotation tools
+        this.annotationToolsService.show();
+      }
+    }, 1000); // Give time for the file to load
+  }
     this.fileGaleryService.sendEventUploadFile();
 
     if (this.file) this.onUpload.emit();
